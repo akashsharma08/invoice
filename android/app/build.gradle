@@ -75,12 +75,14 @@ def enableProguardInReleaseBuilds = false
 def jscFlavor = 'org.webkit:android-jsc:+'
 
 android {
-    ndkVersion rootProject.ext.ndkVersion
+    ndkVersion "27.1.12297006"
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.invoice"
     defaultConfig {
+        missingDimensionStrategy 'react-native-camera', 'general'
+
         applicationId "com.invoice"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
@@ -120,3 +122,5 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+        

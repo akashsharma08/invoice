@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
         //     },
         //   ],
         // });
-        navigation.navigate('Nihaar', { user: response.data.user });
+        navigation.navigate('HomeScreen', { user: response.data.user });
 
       } else {
         console.log('Sign-in was cancelled');
