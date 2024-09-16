@@ -2,7 +2,7 @@ import QRCodeScanner from "react-native-qrcode-scanner";
 import RNPrint from "react-native-print";
 import React, { useEffect, useState } from "react";
 import tw from "twrnc";
-import { getDocs } from "@react-native-firebase/firestore";
+import { addDoc, collection, doc, getDocs, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { datacollection } from "./ProductsData";
 
@@ -19,9 +19,10 @@ import {
   Modal,
 } from 'react-native';
 
-const InvoiceGenerator = () => {
+const Invoice = () => {
   const [productList, setProductList] = useState([]);
   const [isScanned, setIsScanned] = useState(false);
+  const [scannerActive, setScannerActive] = useState(true); // Control scanner state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [data, setData] = useState([]);
@@ -30,6 +31,7 @@ const InvoiceGenerator = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(true); // Modal visibility state
   const navigation = useNavigation();
+  const db = getFirestore();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -74,37 +76,46 @@ const InvoiceGenerator = () => {
   }, []);
 
   // Handle QR code scan success
-  const handleQRCodeScan = e => {
-    setIsScanned(true); // Change state when QR code is scanned
-    // Process scanned data here
-    console.log('Scanned Data: ', e.data);
+  // Handle QR code scan success
+const handleQRCodeScan = e => {
+  setIsScanned(true); // Change state when QR code is scanned
+  setScannerActive(false); // Pause the scanner until "Add More" is pressed
 
-    // Reset the scanned state after a delay if needed
-    setTimeout(() => setIsScanned(false), 2000);
-    const scannedItem = data.filter(item => item.id === e.data)[0];
+  // Process scanned data here
+  const scannedItem = data.find(item => item.id === e.data);
 
-    if (!scannedItem) {
-      Alert.alert('Error', 'Product not found in the database.');
-      return;
-    }
+  if (!scannedItem) {
+    Alert.alert('Error', 'Product not found in the database.');
+    return;
+  }
 
-    const newProduct = {
-      id: scannedItem.id,
-      name: scannedItem.name,
-      price: scannedItem.price,
-      commission: scannedItem.commission,
-      quantity: 1, // Set default quantity to 1
-    };
+  // Check if the product is already in the list
+  const existingProduct = productList.find(item => item.id === scannedItem.id);
+  if (existingProduct) {
+    Alert.alert('Error', 'This product is already in the list.');
+    return;
+  }
 
-    // Check if the product is already in the list
-    const existingProduct = productList.find(item => item.id === newProduct.id);
-    if (existingProduct) {
-      incrementQuantity(existingProduct.id);
-    } else {
-      setProductList(prev => [...prev, newProduct]);
-      updateTotalAmount([...productList, newProduct]);
-    }
+  // Check if there is sufficient quantity in stock
+  if (scannedItem.quantity <= 0) {
+    Alert.alert('Error', 'Insufficient stock for this product.');
+    return;
+  }
+
+  // If there is sufficient quantity, add the product to the list
+  const newProduct = {
+    id: scannedItem.id,
+    name: scannedItem.name,
+    price: scannedItem.price,
+    commission: scannedItem.commission,
+    quantity: 1, // Set default quantity to 1
+    maxQuantity: scannedItem.quantity, // Use maxQuantity from the database
   };
+
+  setProductList(prev => [...prev, newProduct]);
+  updateTotalAmount([...productList, newProduct]);
+};
+
 
   // Update total amount based on product list
   const updateTotalAmount = updatedList => {
@@ -138,7 +149,13 @@ const InvoiceGenerator = () => {
     updateTotalAmount(updatedList);
   };
 
-  // Generate printable invoice
+  // Reactivate the scanner to scan more items
+  const handleAddMoreItems = () => {
+    setScannerActive(true);
+    setIsScanned(false);
+  };
+
+  // Generate printable invoice and update Firestore
   const generatePrintableInvoice = async () => {
     const productRows = productList
       .map(
@@ -151,7 +168,7 @@ const InvoiceGenerator = () => {
           </tr>`,
       )
       .join('');
-
+  
     const htmlContent = `
       <html>
         <head>
@@ -194,39 +211,53 @@ const InvoiceGenerator = () => {
         </body>
       </html>
     `;
-
+  
     try {
-      await RNPrint.print({html: htmlContent});
+      // Step 1: Print the invoice
+      await RNPrint.print({ html: htmlContent });
+  
+      // Step 2: Update the product quantities in the Firestore database
+      await Promise.all(
+        productList.map(async (product) => {
+          const productRef = doc(datacollection, product.id);
+          const updatedQuantity = product.maxQuantity - product.quantity; // Ensure quantity is reduced after purchase
+  
+          if (updatedQuantity >= 0) {
+            await updateDoc(productRef, {
+              quantity: updatedQuantity,
+            });
+          } else {
+            console.error(`Product ${product.name} has insufficient stock.`);
+          }
+        })
+      );
+  
+      // Step 3: Create a sales report in a new Firestore collection
+      const salesCollection = collection(db, 'salesReports'); // Create 'salesReports' collection
+      const salesReport = {
+        customerName,
+        customerAddress,
+        products: productList.map(product => ({
+          name: product.name,
+          price: product.price,
+          commission: product.commission,
+          quantity: product.quantity,
+          total: (product.price + product.commission) * product.quantity,
+        })),
+        totalAmount,
+        date: new Date().toISOString(), // Add date for the sales report
+      };
+  
+      await addDoc(salesCollection, salesReport);
+  
+      // Show success message
+      navigation.goBack();
+      Alert.alert('Success', 'Invoice generated and sales report saved successfully.');
+
     } catch (err) {
-      console.error('Error generating printable invoice: ', err);
+      console.error('Error generating printable invoice or saving sales report: ', err);
+      Alert.alert('Error', 'Failed to generate invoice or update database.');
     }
-  };
-
-  // Function to validate and close the customer details modal
-  const handleCustomerDetailsSubmit = () => {
-    if (customerName && customerAddress) {
-      setIsCustomerModalVisible(false);
-    } else {
-      Alert.alert('Error', 'Please enter both customer name and address.');
-    }
-  };
-
-  // Function to cancel and go back to the home screen
-  const handleCancelInvoice = () => {
-    Alert.alert(
-      'Cancel Invoice',
-      'Are you sure you want to cancel and go back to the home screen?',
-      [
-        {text: 'No', style: 'cancel'},
-        {
-          text: 'Yes',
-          onPress: () => {
-            navigation.goBack();
-            setIsCustomerModalVisible(false);
-          },
-        },
-      ],
-    );
   };
 
   return (
@@ -257,12 +288,12 @@ const InvoiceGenerator = () => {
             />
             <TouchableOpacity
               style={tw`border-2 border-black rounded-lg mb-4`}
-              onPress={handleCustomerDetailsSubmit}>
+              onPress={() => setIsCustomerModalVisible(false)}>
               <Text style={tw`text-black text-lg text-center`}>Submit</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={tw`border-2 border-red-500 rounded-lg`}
-              onPress={handleCancelInvoice}>
+              onPress={() => navigation.goBack()}>
               <Text style={tw`text-red-500 text-lg text-center`}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -271,25 +302,33 @@ const InvoiceGenerator = () => {
 
       {/* Main invoice screen */}
       <ScrollView style={tw`  p-5`}>
-        {/* <Text style={tw`text-black text-2xl `}>Invoice Generator</Text> */}
+        {/* Customer details */}
+        <View style={tw``} >
+          <Text style={tw`text-gray-400`} >Customer Name: {customerName}</Text>
+          <Text style={tw`text-gray-400`} >Customer Address: {customerAddress}</Text>
+        </View>
 
-        <View style={tw`flex-1 w-[100vw] p-10 justify-center items-center`}>
-          <QRCodeScanner
-            onRead={handleQRCodeScan}
-            reactivate={true} // Keeps the QR scanner active
-            reactivateTimeout={1000} // Time delay before the scanner reactivates
-            topContent={<Text style={tw`z-1`}>Scan a product QR code</Text>}
-            // bottomContent={
-            //   <TouchableOpacity style={styles.cancelButton}>
-            //     <Text style={styles.cancelButtonText}>Stop Scanning</Text>
-            //   </TouchableOpacity>
-            // }
-            cameraStyle={tw`h-40 w-40 m-auto`} // Set height and width for the camera screen
-            showMarker={true} // Optionally, show the marker to make it clear where to scan
-            markerStyle={tw`border-2 w-25  h-25 ${
-              isScanned ? 'border-green-500' : 'border-blue-500'
-            }`} // Optional marker customization
-          />
+        <View style={tw`flex-1  p-10 justify-center items-center`}>
+          {scannerActive && !isCustomerModalVisible && (
+            <QRCodeScanner
+              onRead={handleQRCodeScan}
+              reactivate={false} // Scanner is deactivated after a scan
+              topContent={<Text style={tw`z-1`}>Scan a product QR code</Text>}
+              cameraStyle={tw`h-40 w-40 m-auto`} // Set height and width for the camera screen
+              showMarker={true} // Optionally, show the marker to make it clear where to scan
+              markerStyle={tw`border-2 w-25  h-25 ${
+                isScanned ? 'border-green-500' : 'border-blue-500'
+              }`} // Optional marker customization
+            />
+          )}
+
+          {!scannerActive && (
+            <TouchableOpacity
+              style={tw`border-2 border-blue-500 rounded-lg mt-4`}
+              onPress={handleAddMoreItems}>
+              <Text style={tw`text-blue-500 text-lg text-center p-2`}>Add More Items</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={[styles.productRow, tw``]}>
@@ -357,27 +396,6 @@ const InvoiceGenerator = () => {
 };
 
 const styles = StyleSheet.create({
-  scanButton: {
-    backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 5,
-    marginVertical: 10,
-  },
-  scanButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#FF4C4C',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 20,
-  },
-  cancelButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
   productRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -419,4 +437,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InvoiceGenerator;
+export default Invoice;

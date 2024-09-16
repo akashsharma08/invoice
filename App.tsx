@@ -1,15 +1,16 @@
-import AddSuppliers from "./src/screens/AddSuppliers";
-import GoogleSignIn from "./src/screens/GoogleSignIn";
-import HomeScreen from "./src/screens/HomeScreen";
-import Invoice from "./src/screens/Invoice";
-import ProductsData from "./src/screens/ProductsData";
-import React from "react";
-import RegisterItems from "./src/screens/RegisterItems";
-import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
-import { Provider } from "react-redux";
-import { AuthProvider } from "./src/auth/AuthContext";
-import { store } from "./src/redux/store";
+import AddSuppliers from './src/screens/AddSuppliers';
+import GoogleSignIn from './src/screens/GoogleSignIn';
+import HomeScreen from './src/screens/HomeScreen';
+import Invoice from './src/screens/Invoice';
+import ProductsData from './src/screens/ProductsData';
+import React from 'react';
+import RegisterItems from './src/screens/RegisterItems';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import {Provider} from 'react-redux';
+import {AuthProvider} from './src/auth/AuthContext';
+import {store} from './src/redux/store';
+import Notification from './src/components/Notification';
 
 const Stack = createStackNavigator();
 
@@ -49,7 +50,11 @@ const App = () => {
             />
             <Stack.Screen
               name="HomeScreen"
-              options={{headerLeft: () => null, title: 'NIHAAR'}}
+              options={{
+                headerLeft: () => null,
+                headerRight: () => (<Notification/>),
+                title: 'NIHAAR',
+              }}
               component={HomeScreen}
             />
           </Stack.Navigator>

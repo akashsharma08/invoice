@@ -31,6 +31,7 @@ const AddProducts = () => {
   const [imageUri, setImageUri] = useState(null);
   const [commission, setCommission] = useState('');
   const [price, setPrice] = useState('');
+  const [quantity, setQuantity] = useState('');
   const [uploading, setUploading] = useState(false);
   const [suppliers, setSuppliers] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState('');
@@ -100,6 +101,7 @@ const AddProducts = () => {
           imageUrl,
           supplierId: selectedSupplier,
           createdAt: serverTimestamp(),
+          quantity: quantity,
         });
         Alert.alert('Success', 'Form submitted successfully!');
         setName('');
@@ -108,6 +110,7 @@ const AddProducts = () => {
         setCommission('');
         setImageUri(null);
         setSelectedSupplier('');
+        setQuantity(null);
       }
     } catch (error) {
       console.error('Error submitting form: ', error);
@@ -139,6 +142,15 @@ const AddProducts = () => {
         placeholder='Price'
         placeholderTextColor="#888"
         onChangeText={setPrice}
+        keyboardType="numeric"
+        style={styles.input}
+      />
+      <Text>Qty:</Text>
+      <TextInput
+        value={quantity}
+        placeholder="Quantity"
+        placeholderTextColor="#888"
+        onChangeText={setQuantity}
         keyboardType="numeric"
         style={styles.input}
       />

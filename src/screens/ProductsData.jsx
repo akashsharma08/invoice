@@ -23,7 +23,7 @@ import QRCode from 'react-native-qrcode-svg'; // QR code generation
 import RNPrint from 'react-native-print'; // For printing functionality
 
 const db = getFirestore();
-export const datacollection = collection(db, 'dataCollection');
+export const datacollection = collection(db, 'datacolnew');
 
 const ProductsData = () => {
   const [data, setData] = useState([]);
@@ -34,7 +34,7 @@ const ProductsData = () => {
     name: '',
     description: '',
     price: '',
-    numberOfItems: '',
+    quantity: null,
   });
 
   useEffect(() => {
@@ -73,7 +73,7 @@ const ProductsData = () => {
 
   const deleteItem = async id => {
     try {
-      await deleteDoc(doc(db, 'dataCollection', id));
+      await deleteDoc(doc(db, 'datacolnew', id));
       setData(prevData => prevData.filter(item => item.id !== id));
       Alert.alert('Success', 'Item deleted successfully');
     } catch (error) {
@@ -82,23 +82,25 @@ const ProductsData = () => {
   };
 
   const startEditing = item => {
+    console.log(item.quantity);
+
     setEditingItemId(item.id);
     setEditingValues({
       name: item.name,
       description: item.description,
       price: item.price.toString(),
-      numberOfItems: item.numberOfItems.toString(),
+      quantity: item.quantity,
     });
   };
 
   const saveChanges = async id => {
     try {
-      const itemRef = doc(db, 'dataCollection', id);
+      const itemRef = doc(db, 'datacolnew', id);
       await updateDoc(itemRef, {
         name: editingValues.name,
         description: editingValues.description,
         price: parseFloat(editingValues.price),
-        numberOfItems: parseInt(editingValues.numberOfItems, 10),
+        quantity: parseInt(editingValues.quantity, 10),
       });
 
       setData(prevData =>
@@ -108,7 +110,7 @@ const ProductsData = () => {
                 ...item,
                 ...editingValues,
                 price: parseFloat(editingValues.price),
-                numberOfItems: parseInt(editingValues.numberOfItems, 10),
+                quantity: parseInt(editingValues.quantity, 10),
               }
             : item,
         ),
@@ -116,25 +118,22 @@ const ProductsData = () => {
 
       Alert.alert('Success', 'Item updated successfully');
       setEditingItemId(null);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to save changes');
+    } catch (err) {
+      Alert.alert(err, 'Failed to save changes');
     }
   };
 
   const incrementItem = () => {
     setEditingValues(prevValues => ({
       ...prevValues,
-      numberOfItems: (parseInt(prevValues.numberOfItems) + 1).toString(),
+      quantity: (parseInt(prevValues.quantity, 10) + 1).toString(),
     }));
   };
 
   const decrementItem = () => {
     setEditingValues(prevValues => ({
       ...prevValues,
-      numberOfItems: Math.max(
-        1,
-        parseInt(prevValues.numberOfItems) - 1,
-      ).toString(),
+      quantity: Math.max(1, parseInt(prevValues.quantity, 10) - 1).toString(),
     }));
   };
 
@@ -179,7 +178,7 @@ const ProductsData = () => {
           <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${
             item.id
           }" alt="QR Code" />
-          <p>₹${(item.price+ item.commission).toFixed(2)}</p>
+          <p>₹${(item.price + item.commission).toFixed(2)}</p>
         </body>
       </html>
 
@@ -216,6 +215,7 @@ const ProductsData = () => {
       </View>
     );
   }
+  console.log(data);
 
   return (
     <View style={tw`flex-1 p-5 bg-gray-100`}>
@@ -255,23 +255,16 @@ const ProductsData = () => {
                     keyboardType="numeric"
                     style={tw`border-b mb-2 p-2 text-black`}
                   />
-                  <TextInput
-                    value={editingValues.numberOfItems}
-                    onChangeText={text =>
-                      setEditingValues(prev => ({...prev, numberOfItems: text}))
-                    }
-                    keyboardType="numeric"
-                    style={tw`border-b mb-2 p-2 text-black`}
-                  />
+
                   <View style={tw`flex-row items-center`}>
                     <TouchableOpacity onPress={decrementItem}>
-                      <Text style={tw`text-2xl px-2`}>-</Text>
+                      <Text style={tw`text-2xl text-black px-2`}>-</Text>
                     </TouchableOpacity>
-                    <Text style={tw`text-xl`}>
-                      {editingValues.numberOfItems}
+                    <Text style={tw`text-xl text-black`}>
+                      {editingValues.quantity}
                     </Text>
                     <TouchableOpacity onPress={incrementItem}>
-                      <Text style={tw`text-2xl px-2`}>+</Text>
+                      <Text style={tw`text-2xl text-black px-2`}>+</Text>
                     </TouchableOpacity>
                   </View>
                   <Button title="Save" onPress={() => saveChanges(item.id)} />
@@ -285,10 +278,10 @@ const ProductsData = () => {
                     {item.description}
                   </Text>
                   <Text style={tw`text-lg text-green-600`}>
-                    ₹{(item.price+ item.commission).toFixed(2)}
+                    ₹{(item.price + item.commission).toFixed(2)}
                   </Text>
                   <Text style={tw`text-yellow-600`}>
-                    Items: {item.numberOfItems}
+                    Items: {item.quantity}
                   </Text>
                   <TouchableOpacity
                     style={tw`absolute bottom-0 z-1 left-0 opacity-50`}
