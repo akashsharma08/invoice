@@ -1,9 +1,9 @@
-import PinReducer from "./slices/PinSlice";
+import userReducer from "./slices/UserSlice";
 import { configureStore } from "@reduxjs/toolkit";
 
 export const store = configureStore({
   reducer: {
-    pin: PinReducer, // Add your slices here
+    user: userReducer, // Add your slices here
   },
 });
 

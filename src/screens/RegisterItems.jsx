@@ -1,4 +1,14 @@
+import ImagePicker from "react-native-image-crop-picker";
 import React, { useState } from "react";
+import firebase from "@react-native-firebase/app";
+import storage from "@react-native-firebase/storage";
+
+import {
+  addDoc,
+  collection,
+  getFirestore,
+  serverTimestamp,
+} from '@react-native-firebase/firestore';
 import {
   Alert,
   Button,
@@ -8,15 +18,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import ImagePicker from "react-native-image-crop-picker";
-import firebase from "@react-native-firebase/app";
-import storage from "@react-native-firebase/storage";
-import {
-  addDoc,
-  collection,
-  getFirestore,
-  serverTimestamp,
-} from '@react-native-firebase/firestore';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBkWLveBW4GF34Bkr5aj9r3cEcZfYwsIHU',
@@ -33,7 +34,8 @@ if (!firebase.apps.length) {
 }
 
 const db = getFirestore();
-const datacollection = collection(db, 'dataCollection');
+ const datacollection = collection(db, 'dataCollection');
+
 
 const RegisterItems = () => {
   const [name, setName] = useState('');
@@ -41,7 +43,6 @@ const RegisterItems = () => {
   const [imageUri, setImageUri] = useState(null);
   const [commission, setCommission] = useState('');
   const [price, setPrice] = useState('');
-  const [numberOfItems, setNumberOfItems] = useState(''); // New state for number of items
   const [uploading, setUploading] = useState(false);
 
   const pickImage = () => {
@@ -94,7 +95,6 @@ const RegisterItems = () => {
           description,
           price: parseFloat(price),
           commission: parseFloat(commission),
-          numberOfItems: parseInt(numberOfItems, 10), // Save number of items
           imageUrl,
           createdAt: serverTimestamp(),
         });
@@ -103,7 +103,6 @@ const RegisterItems = () => {
         setDescription('');
         setPrice('');
         setCommission('');
-        setNumberOfItems(''); // Reset number of items
         setImageUri(null);
       }
     } catch (error) {
@@ -119,13 +118,13 @@ const RegisterItems = () => {
         value={name}
         onChangeText={setName}
         style={styles.input}
-        placeholder="Enter product name"
+        placeholder="Enter your name"
         placeholderTextColor="#888"
       />
       <Text>Description:</Text>
       <TextInput
         value={description}
-        placeholder="Enter product description"
+        placeholder="Enter your Description"
         placeholderTextColor="#888"
         onChangeText={setDescription}
         style={styles.input}
@@ -149,18 +148,6 @@ const RegisterItems = () => {
         placeholderTextColor="#888"
         style={styles.input}
       />
-
-      {/* New Input for Number of Items */}
-      <Text>Number of Items:</Text>
-      <TextInput
-        value={numberOfItems}
-        onChangeText={setNumberOfItems}
-        keyboardType="numeric"
-        placeholder="Enter number of items"
-        placeholderTextColor="#888"
-        style={styles.input}
-      />
-
       <Button title="Pick Image" onPress={pickImage} />
       {imageUri && (
         <View style={styles.imageContainer}>
