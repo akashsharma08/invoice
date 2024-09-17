@@ -2,9 +2,17 @@ import QRCodeScanner from "react-native-qrcode-scanner";
 import RNPrint from "react-native-print";
 import React, { useEffect, useState } from "react";
 import tw from "twrnc";
-import { addDoc, collection, doc, getDocs, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { datacollection } from "./ProductsData";
+
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  getFirestore,
+  updateDoc,
+} from '@react-native-firebase/firestore';
 
 import {
   View,
@@ -77,45 +85,46 @@ const Invoice = () => {
 
   // Handle QR code scan success
   // Handle QR code scan success
-const handleQRCodeScan = e => {
-  setIsScanned(true); // Change state when QR code is scanned
-  setScannerActive(false); // Pause the scanner until "Add More" is pressed
+  const handleQRCodeScan = e => {
+    setIsScanned(true); // Change state when QR code is scanned
+    setScannerActive(false); // Pause the scanner until "Add More" is pressed
 
-  // Process scanned data here
-  const scannedItem = data.find(item => item.id === e.data);
+    // Process scanned data here
+    const scannedItem = data.find(item => item.id === e.data);
 
-  if (!scannedItem) {
-    Alert.alert('Error', 'Product not found in the database.');
-    return;
-  }
+    if (!scannedItem) {
+      Alert.alert('Error', 'Product not found in the database.');
+      return;
+    }
 
-  // Check if the product is already in the list
-  const existingProduct = productList.find(item => item.id === scannedItem.id);
-  if (existingProduct) {
-    Alert.alert('Error', 'This product is already in the list.');
-    return;
-  }
+    // Check if the product is already in the list
+    const existingProduct = productList.find(
+      item => item.id === scannedItem.id,
+    );
+    if (existingProduct) {
+      Alert.alert('Error', 'This product is already in the list.');
+      return;
+    }
 
-  // Check if there is sufficient quantity in stock
-  if (scannedItem.quantity <= 0) {
-    Alert.alert('Error', 'Insufficient stock for this product.');
-    return;
-  }
+    // Check if there is sufficient quantity in stock
+    if (scannedItem.quantity <= 0) {
+      Alert.alert('Error', 'Insufficient stock for this product.');
+      return;
+    }
 
-  // If there is sufficient quantity, add the product to the list
-  const newProduct = {
-    id: scannedItem.id,
-    name: scannedItem.name,
-    price: scannedItem.price,
-    commission: scannedItem.commission,
-    quantity: 1, // Set default quantity to 1
-    maxQuantity: scannedItem.quantity, // Use maxQuantity from the database
+    // If there is sufficient quantity, add the product to the list
+    const newProduct = {
+      id: scannedItem.id,
+      name: scannedItem.name,
+      price: scannedItem.price,
+      commission: scannedItem.commission,
+      quantity: 1, // Set default quantity to 1
+      maxQuantity: scannedItem.quantity, // Use maxQuantity from the database
+    };
+
+    setProductList(prev => [...prev, newProduct]);
+    updateTotalAmount([...productList, newProduct]);
   };
-
-  setProductList(prev => [...prev, newProduct]);
-  updateTotalAmount([...productList, newProduct]);
-};
-
 
   // Update total amount based on product list
   const updateTotalAmount = updatedList => {
@@ -168,7 +177,7 @@ const handleQRCodeScan = e => {
           </tr>`,
       )
       .join('');
-  
+
     const htmlContent = `
       <html>
         <head>
@@ -211,17 +220,17 @@ const handleQRCodeScan = e => {
         </body>
       </html>
     `;
-  
+
     try {
       // Step 1: Print the invoice
-      await RNPrint.print({ html: htmlContent });
-  
+      await RNPrint.print({html: htmlContent});
+
       // Step 2: Update the product quantities in the Firestore database
       await Promise.all(
-        productList.map(async (product) => {
+        productList.map(async product => {
           const productRef = doc(datacollection, product.id);
           const updatedQuantity = product.maxQuantity - product.quantity; // Ensure quantity is reduced after purchase
-  
+
           if (updatedQuantity >= 0) {
             await updateDoc(productRef, {
               quantity: updatedQuantity,
@@ -229,9 +238,9 @@ const handleQRCodeScan = e => {
           } else {
             console.error(`Product ${product.name} has insufficient stock.`);
           }
-        })
+        }),
       );
-  
+
       // Step 3: Create a sales report in a new Firestore collection
       const salesCollection = collection(db, 'salesReports'); // Create 'salesReports' collection
       const salesReport = {
@@ -247,15 +256,20 @@ const handleQRCodeScan = e => {
         totalAmount,
         date: new Date().toISOString(), // Add date for the sales report
       };
-  
+
       await addDoc(salesCollection, salesReport);
-  
+
       // Show success message
       navigation.goBack();
-      Alert.alert('Success', 'Invoice generated and sales report saved successfully.');
-
+      Alert.alert(
+        'Success',
+        'Invoice generated and sales report saved successfully.',
+      );
     } catch (err) {
-      console.error('Error generating printable invoice or saving sales report: ', err);
+      console.error(
+        'Error generating printable invoice or saving sales report: ',
+        err,
+      );
       Alert.alert('Error', 'Failed to generate invoice or update database.');
     }
   };
@@ -268,7 +282,21 @@ const handleQRCodeScan = e => {
         visible={isCustomerModalVisible}
         animationType="slide"
         onRequestClose={() => {
-          Alert.alert('You need to enter customer details before proceeding.');
+          Alert.alert(
+            'Confirm Exit',
+            'Are you sure you want to leave Customer details? Any unsaved changes will be lost.',
+            [
+              {text: 'Cancel', style: 'cancel'},
+              {
+                text: 'Yes',
+                onPress: () => {
+                  setIsCustomerModalVisible(false);
+                  navigation.goBack();
+                }, // Navigate back if the user confirms
+              },
+            ],
+            {cancelable: true},
+          );
         }}>
         <View
           style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}>
@@ -276,15 +304,19 @@ const handleQRCodeScan = e => {
             <Text style={tw`text-lg font-bold mb-4`}>Customer Details</Text>
             <TextInput
               placeholder="Customer Name"
+              inputMode="text"
               value={customerName}
               onChangeText={setCustomerName}
-              style={tw`border-b-2 text-black text-center border-gray-300 mb-4 p-2`}
+              placeholderTextColor={'lightgray'}
+              style={tw`border-b-2 text-black text-lg text-center border-gray-300 mb-4 p-2`}
             />
             <TextInput
               placeholder="Customer Address"
+              inputMode="text"
               value={customerAddress}
               onChangeText={setCustomerAddress}
-              style={tw`border-b-2 text-black text-center border-gray-300 mb-6 p-2`}
+              placeholderTextColor={'lightgray'}
+              style={tw`border-b-2 text-black text-lg text-center border-gray-300 mb-6 p-2`}
             />
             <TouchableOpacity
               style={tw`border-2 border-black rounded-lg mb-4`}
@@ -293,7 +325,10 @@ const handleQRCodeScan = e => {
             </TouchableOpacity>
             <TouchableOpacity
               style={tw`border-2 border-red-500 rounded-lg`}
-              onPress={() => navigation.goBack()}>
+              onPress={() => {
+                setIsCustomerModalVisible(false);
+                navigation.goBack();
+              }}>
               <Text style={tw`text-red-500 text-lg text-center`}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -303,9 +338,11 @@ const handleQRCodeScan = e => {
       {/* Main invoice screen */}
       <ScrollView style={tw`  p-5`}>
         {/* Customer details */}
-        <View style={tw``} >
-          <Text style={tw`text-gray-400`} >Customer Name: {customerName}</Text>
-          <Text style={tw`text-gray-400`} >Customer Address: {customerAddress}</Text>
+        <View style={tw``}>
+          <Text style={tw`text-gray-400`}>Customer Name: {customerName}</Text>
+          <Text style={tw`text-gray-400`}>
+            Customer Address: {customerAddress}
+          </Text>
         </View>
 
         <View style={tw`flex-1  p-10 justify-center items-center`}>
@@ -326,7 +363,9 @@ const handleQRCodeScan = e => {
             <TouchableOpacity
               style={tw`border-2 border-blue-500 rounded-lg mt-4`}
               onPress={handleAddMoreItems}>
-              <Text style={tw`text-blue-500 text-lg text-center p-2`}>Add More Items</Text>
+              <Text style={tw`text-blue-500 text-lg text-center p-2`}>
+                Add More Items
+              </Text>
             </TouchableOpacity>
           )}
         </View>

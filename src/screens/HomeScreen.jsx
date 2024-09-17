@@ -113,14 +113,14 @@ const HomeScreen = () => {
   return (
     <View style={tw`flex-1 justify-start gap-20 items-center`}>
       <Text style={tw`text-black mt-4 text-2xl`}>Welcome, {user.name}</Text>
+      <View style={tw`flex-1 flex-row flex-wrap justify-center gap-5`}>
       <TouchableOpacity
         onPress={() => navigation.navigate('INVOICE')}
-        style={tw`border-2 rounded-full bg-green-500 bg-opacity-10 border-green-700 p-15`}>
-        <Text style={tw`text-black text-2xl text-green-700`}>
+        style={tw`border-2 px-5  rounded-lg bg-green-700 bg-opacity-10 border-green-700 h-24 w-36 flex justify-center items-center`}>
+        <Text style={tw`text-green-700 text-lg text-center`}>
           Start new invoice
         </Text>
       </TouchableOpacity>
-      <View style={tw`flex-1 flex-row flex-wrap justify-center gap-5`}>
         <TouchableOpacity
           style={tw`border-2 px-5 rounded-lg h-24 w-36 flex justify-center items-center`}
           onPress={() => navigation.navigate('AddItems')}>
@@ -143,14 +143,14 @@ const HomeScreen = () => {
 
       <View style={tw`flex flex-row gap-5`}>
         <TouchableOpacity
-          style={tw`border-2 border-red-600 rounded-lg h-12 mb-10 w-30 flex justify-center items-center`}
+          style={tw` bg-red-400 rounded-lg h-12 mb-10 w-30 flex justify-center items-center`}
           onPress={confirmSignOut}>
-          <Text style={tw`text-red-600 text-lg`}>Sign Out</Text>
+          <Text style={tw`text-white text-lg`}>Sign Out</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={tw`border-2 border-yellow-500 rounded-lg h-12 mb-10 w-30 flex justify-center items-center`}
+          style={tw` bg-yellow-400 rounded-lg h-12 mb-10 w-30 flex justify-center items-center`}
           onPress={() => setChangePinModalVisible(true)}>
-          <Text style={tw`text-yellow-500 text-lg`}>Change PIN</Text>
+          <Text style={tw`text-white text-lg`}>Change PIN</Text>
         </TouchableOpacity>
       </View>
 
@@ -163,13 +163,14 @@ const HomeScreen = () => {
         <View
           style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}>
           <View style={tw`bg-white p-8 rounded-lg w-80`}>
-            <Text style={tw`text-lg font-bold mb-4`}>Enter Password</Text>
+            <Text style={tw`text-lg text-black font-bold mb-4`}>Admin access</Text>
             <TextInput
               value={password}
               inputMode="numeric"
               // keyboardType="numeric"
               onChangeText={setPassword}
               placeholder="Enter password"
+              placeholderTextColor={'lightgray'}
               secureTextEntry={true}
               style={tw`border-b-2 text-black text-center border-gray-300 mb-6 p-2`}
             />
@@ -203,6 +204,7 @@ const HomeScreen = () => {
             <TextInput
               value={oldPin}
               keyboardType="numeric"
+              placeholderTextColor={'lightgray'}
               onChangeText={setOldPin}
               placeholder="Enter old PIN"
               secureTextEntry={true}
@@ -211,6 +213,7 @@ const HomeScreen = () => {
             <TextInput
               value={newPin}
               keyboardType="numeric"
+              placeholderTextColor={'lightgray'}
               onChangeText={setNewPin}
               placeholder="Enter new PIN"
               secureTextEntry={true}

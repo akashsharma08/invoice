@@ -1,4 +1,9 @@
-import React, {useState, useEffect} from 'react';
+import QRCode from "react-native-qrcode-svg";
+import RNPrint from "react-native-print";
+import React, { useEffect, useState } from "react";
+import tw from "twrnc";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+
 import {
   View,
   Text,
@@ -9,6 +14,7 @@ import {
   TextInput,
   Alert,
   Button,
+  BackHandler,
 } from 'react-native';
 import {
   getFirestore,
@@ -18,9 +24,6 @@ import {
   deleteDoc,
   updateDoc,
 } from '@react-native-firebase/firestore';
-import tw from 'twrnc';
-import QRCode from 'react-native-qrcode-svg'; // QR code generation
-import RNPrint from 'react-native-print'; // For printing functionality
 
 const db = getFirestore();
 export const datacollection = collection(db, 'datacolnew');
@@ -36,6 +39,31 @@ const ProductsData = () => {
     price: '',
     quantity: null,
   });
+  const navigation = useNavigation()
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        Alert.alert(
+          'Confirm Exit',
+          'Are you sure you want to leave the Product details? Any unsaved changes will be lost.',
+          [
+            {text: 'Cancel', style: 'cancel'},
+            {
+              text: 'Yes',
+              onPress: () => navigation.goBack(), // Navigate back if the user confirms
+            },
+          ],
+          {cancelable: true},
+        );
+        return true; // Prevent default back behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   useEffect(() => {
     const fetchData = async () => {
