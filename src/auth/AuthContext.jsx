@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async () => {
     try {
+      await GoogleSignin.signOut();
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
 

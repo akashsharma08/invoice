@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import tw from "twrnc";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../auth/AuthContext";
 import { setPin as updateReduxPin } from "../redux/slices/PinSlice";
@@ -21,6 +21,8 @@ import {
   TouchableOpacity,
   View,
   Modal,
+  BackHandler,
+  Image,
 } from 'react-native';
 
 const db = getFirestore();
@@ -40,13 +42,34 @@ const HomeScreen = () => {
     } finally {
     }
   };
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        Alert.alert(
+          'Confirm Exit',
+          'Are you sure you want to leave the Homepage? Confirm to Sign out.',
+          [
+            {text: 'Cancel', style: 'cancel'},
+            {
+              text: 'Signout',
+              onPress: signOut , // Navigate back if the user confirms
+            },
+          ],
+          {cancelable: true},
+        );
+        return true; // Prevent default back behavior
+      };
 
-  fetchData();
-  let finalPin;
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
 
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [signOut]),
+  );
+  const finalPinRef = useRef('');
   useEffect(() => {
-    finalPin = pin;
-    console.log(finalPin);
+    finalPinRef.current = pin;
+    console.log(finalPinRef);
   }, [pin]);
 
   const {signOut} = useAuth();
@@ -58,6 +81,7 @@ const HomeScreen = () => {
   const [isChangePinModalVisible, setChangePinModalVisible] = useState(false);
   const [oldPin, setOldPin] = useState('');
   const [newPin, setNewPin] = useState('');
+console.log(user.photo);
 
   const confirmSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -112,6 +136,7 @@ const HomeScreen = () => {
 
   return (
     <View style={tw`flex-1 justify-start gap-20 items-center`}>
+      <Image resizeMethod="center" style={tw`w-20 z-1`} source={{uri: user.photo}} />
       <Text style={tw`text-black mt-4 text-2xl`}>Welcome, {user.name}</Text>
       <View style={tw`flex-1 flex-row flex-wrap justify-center gap-5`}>
       <TouchableOpacity

@@ -11,6 +11,8 @@ import {Provider} from 'react-redux';
 import {AuthProvider} from './src/auth/AuthContext';
 import {store} from './src/redux/store';
 import Notification from './src/components/Notification';
+import { Image } from 'react-native';
+import tw from 'twrnc'
 
 const Stack = createStackNavigator();
 
@@ -25,9 +27,7 @@ const App = () => {
               options={{
                 title: 'NIHAAR',
                 headerTintColor: 'white',
-                headerStyle: {
-                  backgroundColor: 'gray',
-                },
+                headerShown: false,
               }}
               component={GoogleSignIn}
             />
@@ -51,9 +51,20 @@ const App = () => {
             <Stack.Screen
               name="HomeScreen"
               options={{
-                headerLeft: () => null,
+                headerTintColor: 'white',
+                headerLeft: () => <Image resizeMode='center' style={tw`w-6 ml-2`} source={require('./src/images/menu.png')}/>,
                 headerRight: () => (<Notification/>),
                 title: 'NIHAAR',
+                headerStyle: {
+                  
+                  backgroundColor: '#1CB2F8',
+                  
+                },
+                headerTitleAlign: 'center',
+                headerTitleStyle:{
+                  fontSize: 30,
+                  textAlign:'center'
+                }
               }}
               component={HomeScreen}
             />
