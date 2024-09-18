@@ -1,9 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
-import tw from "twrnc";
-import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
-import { useDispatch } from "react-redux";
-import { useAuth } from "../auth/AuthContext";
-import { setPin as updateReduxPin } from "../redux/slices/PinSlice";
+import React, {useEffect, useRef, useState} from 'react';
+import tw from 'twrnc';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import {useDispatch} from 'react-redux';
+import {useAuth} from '../auth/AuthContext';
+import {setPin as updateReduxPin} from '../redux/slices/PinSlice';
 
 import {
   collection,
@@ -52,7 +56,7 @@ const HomeScreen = () => {
             {text: 'Cancel', style: 'cancel'},
             {
               text: 'Signout',
-              onPress: signOut , // Navigate back if the user confirms
+              onPress: signOut, // Navigate back if the user confirms
             },
           ],
           {cancelable: true},
@@ -81,7 +85,7 @@ const HomeScreen = () => {
   const [isChangePinModalVisible, setChangePinModalVisible] = useState(false);
   const [oldPin, setOldPin] = useState('');
   const [newPin, setNewPin] = useState('');
-console.log(user.photo);
+  console.log(user.photo);
 
   const confirmSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -117,7 +121,6 @@ console.log(user.photo);
             pin: newPin,
           });
 
-
           setOldPin('');
           setNewPin('');
           setChangePinModalVisible(false);
@@ -136,16 +139,31 @@ console.log(user.photo);
 
   return (
     <View style={tw`flex-1 justify-start gap-20 items-center`}>
-      <Image resizeMethod="center" style={tw`w-20 z-1`} source={{uri: user.photo}} />
-      <Text style={tw`text-black mt-4 text-2xl`}>Welcome, {user.name}</Text>
+      <View style={tw`flex-col justify-center items-center mt-4`}>
+        <Image
+          resizeMethod="center"
+          style={[
+            tw`w-40 h-40 rounded-full shadow-lg   z-1`,
+            {
+              shadowColor: 'red', // Customize shadow color
+              shadowOffset: {width: 0, height: 4}, // Offset for shadow
+              shadowOpacity: 1, // Customize shadow opacity
+              shadowRadius: 5, // Customize shadow blur
+              elevation: 5, // Elevation for Android
+            },
+          ]}
+          source={{uri: user.photo}}
+        />
+        <Text style={tw`text-black  text-2xl`}>Welcome, {user.name}</Text>
+      </View>
       <View style={tw`flex-1 flex-row flex-wrap justify-center gap-5`}>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('INVOICE')}
-        style={tw`border-2 px-5  rounded-lg bg-green-700 bg-opacity-10 border-green-700 h-24 w-36 flex justify-center items-center`}>
-        <Text style={tw`text-green-700 text-lg text-center`}>
-          Start new invoice
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('INVOICE')}
+          style={tw`border-2 px-5  rounded-lg bg-green-700 bg-opacity-10 border-green-700 h-24 w-36 flex justify-center items-center`}>
+          <Text style={tw`text-green-700 text-lg text-center`}>
+            Start new invoice
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={tw`border-2 px-5 rounded-lg h-24 w-36 flex justify-center items-center`}
           onPress={() => navigation.navigate('AddItems')}>
@@ -188,7 +206,9 @@ console.log(user.photo);
         <View
           style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}>
           <View style={tw`bg-white p-8 rounded-lg w-80`}>
-            <Text style={tw`text-lg text-black font-bold mb-4`}>Admin access</Text>
+            <Text style={tw`text-lg text-black font-bold mb-4`}>
+              Admin access
+            </Text>
             <TextInput
               value={password}
               inputMode="numeric"
