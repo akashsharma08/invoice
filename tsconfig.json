@@ -37,7 +37,9 @@
     // Causes issues with package.json "exports"
     "forceConsistentCasingInFileNames": false
   },
+  "include": ["src/**/*", "react-native-snap-carousel.d.ts"],
   "exclude": [
     "**/Pods/**"
   ]
+  
 }

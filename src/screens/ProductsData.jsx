@@ -1,9 +1,9 @@
-import QRCode from "react-native-qrcode-svg";
-import RNPrint from "react-native-print";
-import React, { useEffect, useState } from "react";
-import tw from "twrnc";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-
+import QRCode from 'react-native-qrcode-svg';
+import RNPrint from 'react-native-print';
+import React, {useEffect, useRef, useState} from 'react';
+import tw from 'twrnc';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+// import Carousel from 'react-native-snap-carousel';
 import {
   View,
   Text,
@@ -15,6 +15,8 @@ import {
   Alert,
   Button,
   BackHandler,
+  Dimensions,
+  StyleSheet,
 } from 'react-native';
 import {
   getFirestore,
@@ -24,14 +26,16 @@ import {
   deleteDoc,
   updateDoc,
 } from '@react-native-firebase/firestore';
-
+import CustomCarousel from '../components/Corousel';
+const {width: screenWidth} = Dimensions.get('window');
 const db = getFirestore();
 export const datacollection = collection(db, 'datacolnew');
-
+// const { width: screenWidth } = Dimensions.get('window');
 const ProductsData = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [editingItemId, setEditingItemId] = useState(null);
   const [editingValues, setEditingValues] = useState({
     name: '',
@@ -245,6 +249,22 @@ const ProductsData = () => {
   }
   console.log(data);
 
+  // const imageData = [
+  //   {uri: 'https://via.placeholder.com/400x300/FF0000/FFFFFF?text=Image1'},
+  //   {uri: 'https://via.placeholder.com/400x300/00FF00/FFFFFF?text=Image2'},
+  //   {uri: 'https://via.placeholder.com/400x300/0000FF/FFFFFF?text=Image3'},
+  //   {uri: 'https://via.placeholder.com/400x300/FFFF00/FFFFFF?text=Image4'},
+  //   {uri: 'https://via.placeholder.com/400x300/00FFFF/FFFFFF?text=Image5'},
+  // ];
+
+  // // Render individual carousel items
+  // const renderItem = ({item}) => {
+  //   return (
+  //     <View style={styles.carouselItem}>
+  //       <Image source={{uri: item.uri}} style={styles.image} />
+  //     </View>
+  //   );
+  // };
   return (
     <View style={tw`flex-1 p-5 bg-gray-100`}>
       <FlatList
@@ -257,7 +277,7 @@ const ProductsData = () => {
         )}
         renderItem={({item}) => (
           <View
-            style={tw`bg-white p-4 mb-5 rounded-lg shadow flex-row justify-between`}>
+            style={tw`bg-white p-4 mb-5  rounded-lg shadow flex-row justify-between`}>
             <View>
               {editingItemId === item.id ? (
                 <>
@@ -338,19 +358,52 @@ const ProductsData = () => {
                 </>
               )}
             </View>
-            <View>
-              {item.imageUrl && (
-                <Image
-                  source={{uri: item.imageUrl[0]}}
-                  style={tw`w-36 h-36 rounded-lg mt-2`}
-                />
+            <View style={tw``}>
+              {item.imageUrl && item.imageUrl.length > 0 ? (
+                <CustomCarousel images={item.imageUrl} />
+              ) : (
+                <Text>No Images Available</Text>
               )}
             </View>
+            {/* <View style={styles.container}>
+              <Carousel
+                ref={carouselRef}
+                data={imageData}
+                sliderWidth={screenWidth}
+                itemWidth={screenWidth * 0.8} // Set the width of each carousel item
+                renderItem={renderItem}
+                onSnapToItem={index => setActiveIndex(index)} // Update active index on snap
+                layout="default" // Can use "default", "stack", or "tinder" layout
+              />
+              <Text style={styles.caption}>
+                Image {activeIndex + 1} of {imageData.length}
+              </Text>
+            </View> */}
           </View>
         )}
       />
     </View>
   );
 };
-
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  carouselItem: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: 250,
+  },
+  caption: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+});
 export default ProductsData;
