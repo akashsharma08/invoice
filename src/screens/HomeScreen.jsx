@@ -1,13 +1,14 @@
-import React, {useEffect, useRef, useState} from 'react';
-import tw from 'twrnc';
+import React, { useEffect, useRef, useState } from "react";
+import tw from "twrnc";
+import { useDispatch } from "react-redux";
+import { useAuth } from "../auth/AuthContext";
+import { setPin as updateReduxPin } from "../redux/slices/PinSlice";
+
 import {
   useFocusEffect,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import {useDispatch} from 'react-redux';
-import {useAuth} from '../auth/AuthContext';
-import {setPin as updateReduxPin} from '../redux/slices/PinSlice';
 
 import {
   collection,
@@ -46,6 +47,7 @@ const HomeScreen = () => {
     } finally {
     }
   };
+  fetchData();
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
@@ -70,10 +72,10 @@ const HomeScreen = () => {
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     }, [signOut]),
   );
-  const finalPinRef = useRef('');
+  let finalPin
   useEffect(() => {
-    finalPinRef.current = pin;
-    console.log(finalPinRef);
+    finalPin = pin;
+    // console.log(finalPinRef);
   }, [pin]);
 
   const {signOut} = useAuth();

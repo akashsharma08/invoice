@@ -1,22 +1,27 @@
-import AddSuppliers from './src/screens/AddSuppliers';
-import GoogleSignIn from './src/screens/GoogleSignIn';
-import HomeScreen from './src/screens/HomeScreen';
-import Invoice from './src/screens/Invoice';
-import ProductsData from './src/screens/ProductsData';
-import React from 'react';
-import RegisterItems from './src/screens/RegisterItems';
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
-import {Provider} from 'react-redux';
-import {AuthProvider} from './src/auth/AuthContext';
-import {store} from './src/redux/store';
-import Notification from './src/components/Notification';
-import { Image } from 'react-native';
-import tw from 'twrnc'
+import AddSuppliers from "./src/screens/AddSuppliers";
+import GoogleSignIn from "./src/screens/GoogleSignIn";
+import HomeScreen from "./src/screens/HomeScreen";
+import Invoice from "./src/screens/Invoice";
+import Notification from "./src/components/Notification";
+import ProductsData from "./src/screens/ProductsData";
+import React from "react";
+import RegisterItems from "./src/screens/RegisterItems";
+import tw from "twrnc";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { Image } from "react-native";
+import { Provider } from "react-redux";
+import { AuthProvider } from "./src/auth/AuthContext";
+import { store } from "./src/redux/store";
 
 const Stack = createStackNavigator();
 
 const App = () => {
+  if (__DEV__) {
+    console.log = () => {};
+    console.warn = () => {};
+    console.error = () => {};
+  }
   return (
     <Provider store={store}>
       <NavigationContainer>
