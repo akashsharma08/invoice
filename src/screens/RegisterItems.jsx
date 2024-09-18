@@ -1,10 +1,10 @@
-import CustomPicker from "../components/CustonPicker";
-import ImagePicker from "react-native-image-crop-picker";
-import React, { useEffect, useState } from "react";
-import firebase from "@react-native-firebase/app";
-import storage from "@react-native-firebase/storage";
-import tw from "twrnc";
-import { BlurView } from "@react-native-community/blur";
+import CustomPicker from '../components/CustonPicker';
+import ImagePicker from 'react-native-image-crop-picker';
+import React, {useEffect, useState} from 'react';
+import firebase from '@react-native-firebase/app';
+import storage from '@react-native-firebase/storage';
+import tw from 'twrnc';
+import {BlurView} from '@react-native-community/blur';
 
 import {
   addDoc,
@@ -26,6 +26,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 // Initialize Firestore
 const firebaseConfig = {
@@ -118,8 +119,12 @@ const AddProducts = () => {
       setUploading(true);
 
       try {
+        console.log(1);
+
         await reference.putFile(uri);
+        console.log(2);
         const downloadUrl = await reference.getDownloadURL();
+        console.log(3);
         imageUrl.push(downloadUrl);
       } catch (error) {
         console.error('Error uploading image: ', error);
@@ -131,7 +136,17 @@ const AddProducts = () => {
     setUploading(false);
     return imageUrl;
   };
-
+  const navigation = useNavigation();
+  const resetForm = () => {
+    setName(''); // Reset name field
+    setDescription(''); // Reset description field
+    setPrice(''); // Reset price field
+    setCommission(''); // Reset commission field
+    setQuantity(''); // Reset quantity field
+    setSelectedSupplier(null); // Reset supplier selection
+    setImageUri([]); // Reset images
+    setIsSubmitting(false); // Reset submission state
+  };
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
@@ -145,10 +160,11 @@ const AddProducts = () => {
           imageUrl,
           supplierId: selectedSupplier,
           createdAt: serverTimestamp(),
-          quantity: parseInt(quantity),
+          quantity: parseInt(quantity, 10),
         });
         Alert.alert('Success', 'Form submitted successfully!');
         resetForm();
+        navigation.goBack();
       }
     } catch (error) {
       console.error('Error submitting form: ', error);

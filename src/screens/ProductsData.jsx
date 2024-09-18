@@ -39,7 +39,7 @@ const ProductsData = () => {
     price: '',
     quantity: null,
   });
-  const navigation = useNavigation()
+  const navigation = useNavigation();
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
@@ -341,7 +341,7 @@ const ProductsData = () => {
             <View>
               {item.imageUrl && (
                 <Image
-                  source={{uri: item.imageUrl}}
+                  source={{uri: item.imageUrl[0]}}
                   style={tw`w-36 h-36 rounded-lg mt-2`}
                 />
               )}

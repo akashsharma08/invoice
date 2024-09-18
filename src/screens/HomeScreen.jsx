@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import tw from "twrnc";
-import { useDispatch } from "react-redux";
-import { useAuth } from "../auth/AuthContext";
-import { setPin as updateReduxPin } from "../redux/slices/PinSlice";
+import React, { useEffect, useState } from 'react';
+import tw from 'twrnc';
+import { useAuth } from '../auth/AuthContext';
+// import { setPin as updateReduxPin } from "../redux/slices/PinSlice";
 
 import {
   useFocusEffect,
@@ -13,7 +12,6 @@ import {
 import {
   collection,
   doc,
-  getDoc,
   getDocs,
   getFirestore,
   updateDoc,
@@ -35,7 +33,6 @@ const pinCollection = collection(db, 'pin');
 
 const HomeScreen = () => {
   const [pin, setLocalPin] = useState(0);
-  const dispatch = useDispatch();
 
   const fetchData = async () => {
     try {
@@ -72,11 +69,11 @@ const HomeScreen = () => {
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     }, [signOut]),
   );
-  let finalPin
-  useEffect(() => {
-    finalPin = pin;
-    // console.log(finalPinRef);
-  }, [pin]);
+  // let finalPin;
+  // useEffect(() => {
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   finalPin = pin;
+  // }, [pin]);
 
   const {signOut} = useAuth();
   const route = useRoute();
@@ -214,7 +211,7 @@ const HomeScreen = () => {
             <TextInput
               value={password}
               inputMode="numeric"
-              // keyboardType="numeric"
+
               onChangeText={setPassword}
               placeholder="Enter password"
               placeholderTextColor={'lightgray'}
@@ -237,8 +234,6 @@ const HomeScreen = () => {
           </View>
         </View>
       </Modal>
-
-      {/* Modal for changing PIN */}
       <Modal
         transparent={true}
         visible={isChangePinModalVisible}
