@@ -6,6 +6,7 @@ import Notification from "./src/components/Notification";
 import ProductsData from "./src/screens/ProductsData";
 import React from "react";
 import RegisterItems from "./src/screens/RegisterItems";
+import SalesReport from "./src/screens/SalesReport";
 import tw from "twrnc";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -17,11 +18,11 @@ import { store } from "./src/redux/store";
 const Stack = createStackNavigator();
 
 const App = () => {
-  if (__DEV__) {
-    console.log = () => {};
-    console.warn = () => {};
-    console.error = () => {};
-  }
+  // if (__DEV__) {
+  //   console.log = () => {};
+  //   console.warn = () => {};
+  //   console.error = () => {};
+  // }
   return (
     <Provider store={store}>
       <NavigationContainer>
@@ -48,6 +49,7 @@ const App = () => {
               }}
             />
             <Stack.Screen name="ProductsData" component={ProductsData} />
+            <Stack.Screen name="SalesReport" component={SalesReport} />
             <Stack.Screen
               options={{headerLeft: () => null}}
               name="INVOICE"
@@ -57,19 +59,23 @@ const App = () => {
               name="HomeScreen"
               options={{
                 headerTintColor: 'white',
-                headerLeft: () => <Image resizeMode='center' style={tw`w-6 ml-2`} source={require('./src/images/menu.png')}/>,
-                headerRight: () => (<Notification/>),
+                headerLeft: () => (
+                  <Image
+                    resizeMode="center"
+                    style={tw`w-6 ml-2`}
+                    source={require('./src/images/menu.png')}
+                  />
+                ),
+                headerRight: () => <Notification />,
                 title: 'NIHAAR',
                 headerStyle: {
-                  
                   backgroundColor: '#1CB2F8',
-                  
                 },
                 headerTitleAlign: 'center',
-                headerTitleStyle:{
+                headerTitleStyle: {
                   fontSize: 30,
-                  textAlign:'center'
-                }
+                  textAlign: 'center',
+                },
               }}
               component={HomeScreen}
             />

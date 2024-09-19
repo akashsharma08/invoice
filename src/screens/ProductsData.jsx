@@ -1,8 +1,14 @@
-import QRCode from 'react-native-qrcode-svg';
-import RNPrint from 'react-native-print';
-import React, {useEffect, useRef, useState} from 'react';
-import tw from 'twrnc';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import CustomCarousel from "../components/Corousel";
+import QRCode from "react-native-qrcode-svg";
+import RNFS from "react-native-fs";
+import RNPrint from "react-native-print";
+import React, { useEffect, useRef, useState } from "react";
+import ViewShot from "react-native-view-shot";
+import WebView from "react-native-webview";
+import generatePrintableTag from "../components/GenerateQRTag";
+import tw from "twrnc";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+
 // import Carousel from 'react-native-snap-carousel';
 import {
   View,
@@ -17,6 +23,7 @@ import {
   BackHandler,
   Dimensions,
   StyleSheet,
+  Modal,
 } from 'react-native';
 import {
   getFirestore,
@@ -26,7 +33,6 @@ import {
   deleteDoc,
   updateDoc,
 } from '@react-native-firebase/firestore';
-import CustomCarousel from '../components/Corousel';
 const {width: screenWidth} = Dimensions.get('window');
 const db = getFirestore();
 export const datacollection = collection(db, 'datacolnew');
@@ -37,6 +43,10 @@ const ProductsData = () => {
   const [error, setError] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [editingItemId, setEditingItemId] = useState(null);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [htmlContent, setHtmlContent] = useState(''); // State to store HTML content
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [itemID, setItemID] = useState(null);
   const [editingValues, setEditingValues] = useState({
     name: '',
     description: '',
@@ -68,7 +78,29 @@ const ProductsData = () => {
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     }, [navigation]),
   );
+  const viewShotRef = useRef(null);
 
+  // Existing state and functions...
+  const saveTagAsImage = async () => {
+    if (viewShotRef.current) {
+      try {
+        // Capture the view as an image
+        const uri = await viewShotRef.current.capture({
+          format: 'png',
+          quality: 0.8,
+        });
+
+        // Save the image to the file system
+        const filePath = `${RNFS.ExternalDirectoryPath}/tag_${itemID}.png`;
+        await RNFS.copyFile(uri, filePath);
+
+        console.log('Image saved to:', filePath);
+        alert(`Tag saved at ${RNFS.ExternalDirectoryPath}/tag_${itemID}.png`);
+      } catch (error) {
+        console.error('Error saving image:', error);
+      }
+    }
+  };
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -114,7 +146,7 @@ const ProductsData = () => {
   };
 
   const startEditing = item => {
-    console.log(item.quantity);
+    // console.log(item.quantity);
 
     setEditingItemId(item.id);
     setEditingValues({
@@ -172,57 +204,124 @@ const ProductsData = () => {
   const generatePrintableTag = async item => {
     const htmlContent = `
       <html>
-        <head>
-          <style>
-            body {
-              width: 150px; /* Width of the paper */
-              height: 250px; /* Height of the paper */
-              margin: 0; /* Remove default margins */
-              padding: 10px; /* Add padding to the content */
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              align-items: center;
-              font-family: Arial, sans-serif;
-              text-align: center;
-              border: 1px solid #ddd; /* Optional border for better visibility */
-              border-radius: 10px; /* Rounded corners */
-            }
-            h1 {
-              font-size: 18px;
-              color: #333;
-              margin-bottom: 8px;
-            }
-            img {
-              width: 120px;
-              height: 120px;
-              margin-bottom: 8px;
-            }
-            p {
-              font-size: 20px;
-              color: green;
-              margin-top: 5px;
-            }
-          </style>
-        </head>
-        <body>
-          <h1>${item.name}</h1>
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${
+      <head>
+        <style>
+          body {
+            width: 300px; /* Adjusted width */
+            height: 150px; /* Adjusted height */
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+          }
+          .left-section {
+            text-align: center;
+            padding-right: 10px;
+          }
+          .left-section img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 5px;
+          }
+          .left-section p {
+            font-size: 10px;
+            margin: 0;
+          }
+          .right-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+          }
+          .product-info {
+            text-align: left;
+          }
+          .product-info h2 {
+            font-size: 16px;
+            margin: 0;
+          }
+          .product-info p {
+            font-size: 12px;
+            margin: 2px 0;
+            color: #555;
+          }
+          .price-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+          }
+          .price-section .price {
+            font-size: 24px;
+            font-weight: bold;
+          }
+          .price-section small {
+            font-size: 10px;
+            color: #555;
+          }
+          .divider {
+            width: 2px;
+            background-color: red;
+            height: 100%;
+            margin-right: 10px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="left-section">
+          <p>Great Britain</p>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${
             item.id
           }" alt="QR Code" />
-          <p>₹${(item.price + item.commission).toFixed(2)}</p>
-        </body>
-      </html>
+          <p>1234567890</p>
+        </div>
+        <div class="divider"></div>
+        <div class="right-section">
+          <div class="product-info">
+            <h2>${item.name}</h2>
+            <p>${item.description}</p>
+          </div>
+          <div class="price-section">
+            <div>
+              <span class="price">$${(item.price + item.commission).toFixed(
+                2,
+              )}</span>
+            </div>
+           
+          </div>
+        </div>
+      </body>
+    </html>
+    
 
 
     `;
-    try {
-      await RNPrint.print({html: htmlContent});
-    } catch (error) {
-      console.error('Error generating printable tag: ', error);
-    }
+    setHtmlContent(htmlContent);
+    // console.log("generating qr");
+    // try {
+    //   await RNPrint.print({html: htmlContent});
+    // } catch (error) {
+    //   console.error('Error generating printable tag: ', error);
+    // }
+    return htmlContent;
   };
+  useEffect(() => {
+    const generateHtmlContent = async () => {
+      if (selectedItem) {
+        try {
+          const content = await generatePrintableTag(selectedItem);
+          setHtmlContent(content);
+        } catch (error) {
+          console.error('Error generating HTML content:', error);
+        }
+      }
+    };
 
+    generateHtmlContent();
+  }, []);
   if (loading) {
     return (
       <View style={tw`flex-1 justify-center items-center`}>
@@ -247,7 +346,7 @@ const ProductsData = () => {
       </View>
     );
   }
-  console.log(data);
+  // console.log(data);
 
   // const imageData = [
   //   {uri: 'https://via.placeholder.com/400x300/FF0000/FFFFFF?text=Image1'},
@@ -326,7 +425,7 @@ const ProductsData = () => {
                     {item.description}
                   </Text>
                   <Text style={tw`text-lg text-green-600`}>
-                    ₹{(item.price + item.commission).toFixed(2)}
+                    ₹{(item.price )}
                   </Text>
                   <Text style={tw`text-yellow-600`}>
                     Items: {item.quantity}
@@ -349,7 +448,11 @@ const ProductsData = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={tw`absolute bottom-0 z-1 left-20 `}
-                    onPress={() => generatePrintableTag(item)}>
+                    onPress={() => {
+                      setSelectedItem(item);
+                      setItemID(item.id);
+                      setModalVisible(true);
+                    }}>
                     <Image
                       style={tw`w-7 h-7`}
                       source={require('../images/label.png')}
@@ -382,28 +485,128 @@ const ProductsData = () => {
           </View>
         )}
       />
+      <View style={tw`flex-1 p-5 bg-gray-100`}>
+        {/* Existing FlatList and other components */}
+
+        <Modal
+          transparent={true}
+          visible={isModalVisible}
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}>
+          <View style={styles.overlay}>
+            <ViewShot ref={viewShotRef} style={styles.modalContainer}>
+              <View style={styles.leftSection}>
+                <Text style={styles.country}>Nihaar</Text>
+                <Image
+                  style={styles.qrCode}
+                  source={{
+                    uri: `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${itemID}`,
+                  }}
+                />
+                <Text style={styles.phoneNumber}>{itemID}</Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.rightSection}>
+                <Image   style={tw` absolute top-0 right-5 w-8 h-8`}  source={require('../images/n.png')}/>
+                <Text style={tw` text-black text-[10px] -bottom-4 right-5 absolute `} >*Terms and conditions applied</Text>
+                <View style={styles.productInfo}>
+                  <Text style={styles.productName}>{selectedItem?.name}</Text>
+                  <Text style={styles.productDescription}>
+                    {selectedItem?.description}
+                  </Text>
+                </View>
+                <View style={styles.priceSection}>
+                    <View style={tw` absolute  left-0`}>
+                      <Text style={tw` absolute top-4 text-black text-lg`}>Rs.</Text>
+                    </View>
+                  <Text style={styles.price}>  &nbsp;
+                    {(selectedItem?.price)}
+                  </Text>
+                </View>
+              </View>
+            </ViewShot>
+            <Button title="Save as PNG" onPress={saveTagAsImage} />
+          </View>
+        </Modal>
+      </View>
     </View>
   );
 };
 const styles = StyleSheet.create({
-  container: {
+  overlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
   },
-  carouselItem: {
+  modalContainer: {
+    width: screenWidth * 0.9, // Adjust width as needed
     backgroundColor: 'white',
-    borderRadius: 8,
-    overflow: 'hidden',
+    borderRadius: 10,
+    flexDirection: 'row',
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  image: {
-    width: '100%',
-    height: 250,
+  leftSection: {
+    width: '30%',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  caption: {
-    marginTop: 10,
-    fontSize: 16,
+  country: {
+    fontSize: 12,
+    color: '#555',
+  },
+  qrCode: {
+    width: 90,
+    height: 90,
+  },
+  phoneNumber: {
+    fontSize: 5,
+    color: '#555',
+  },
+  divider: {
+    width: 2,
+    backgroundColor: 'green',
+    height: '100%',
+    marginHorizontal: 10,
+    
+  },
+  rightSection: {
+    position:'relative',
+    width: '70%',
+    justifyContent: 'space-between',
+  },
+  productInfo: {
+    marginBottom: 10,
+  },
+  productName: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#333',
   },
+  productDescription: {
+    fontSize: 12,
+    color: 'gray',
+  },
+  priceSection: {
+    position: 'relative',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  price: {
+    fontSize: 35,
+    // flex:1,
+    fontWeight: 'bold',
+    color: 'green',
+  },
+  priceDetails: {
+    fontSize: 10,
+    color: '#555',
+  },
 });
+
 export default ProductsData;

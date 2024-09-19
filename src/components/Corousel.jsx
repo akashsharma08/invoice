@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, Image, Dimensions, StyleSheet, Animated } from 'react-native';
+import React, { useRef, useState } from "react";
+import { Animated, Dimensions, Image, StyleSheet, Text, View } from "react-native";
 
 // Get the screen width
 const { width: screenWidth } = Dimensions.get('window');
@@ -78,11 +78,12 @@ const CustomCarousel = ({images}) => {
 const styles = StyleSheet.create({
   container: {
     // borderRadius:100,
-    width:150,
+    width:152,
     // marginLeft: 50,
     justifyContent: 'center',
   },
   carouselItem: {
+    margin:1,
     width: 150,
     height:150,
     justifyContent: 'center',

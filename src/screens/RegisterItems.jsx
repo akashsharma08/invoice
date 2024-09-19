@@ -1,10 +1,11 @@
-import CustomPicker from '../components/CustonPicker';
-import ImagePicker from 'react-native-image-crop-picker';
-import React, {useEffect, useState} from 'react';
-import firebase from '@react-native-firebase/app';
-import storage from '@react-native-firebase/storage';
-import tw from 'twrnc';
-import {BlurView} from '@react-native-community/blur';
+import CustomPicker from "../components/CustonPicker";
+import ImagePicker from "react-native-image-crop-picker";
+import React, { useEffect, useState } from "react";
+import firebase from "@react-native-firebase/app";
+import storage from "@react-native-firebase/storage";
+import tw from "twrnc";
+import { BlurView } from "@react-native-community/blur";
+import { useNavigation } from "@react-navigation/native";
 
 import {
   addDoc,
@@ -26,7 +27,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 // Initialize Firestore
 const firebaseConfig = {
@@ -141,7 +141,7 @@ const AddProducts = () => {
     setName(''); // Reset name field
     setDescription(''); // Reset description field
     setPrice(''); // Reset price field
-    setCommission(''); // Reset commission field
+    // setCommission(''); // Reset commission field
     setQuantity(''); // Reset quantity field
     setSelectedSupplier(null); // Reset supplier selection
     setImageUri([]); // Reset images
@@ -156,7 +156,7 @@ const AddProducts = () => {
           name,
           description,
           price: parseFloat(price),
-          commission: parseFloat(commission),
+          // commission: parseFloat(commission),
           imageUrl,
           supplierId: selectedSupplier,
           createdAt: serverTimestamp(),
@@ -227,14 +227,14 @@ const AddProducts = () => {
         style={styles.input}
       />
       {/* <Text>Commission:</Text> */}
-      <TextInput
+      {/* <TextInput
         value={commission}
         onChangeText={setCommission}
         keyboardType="numeric"
         placeholder="Enter commission"
         placeholderTextColor="#888"
         style={styles.input}
-      />
+      /> */}
       {/* <Text>Supplier:</Text> */}
       {/* <Picker
         selectedValue={selectedSupplier}

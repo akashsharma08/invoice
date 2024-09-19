@@ -23,9 +23,13 @@ const AddSuppliers = () => {
 
   const db = getFirestore();
   const suppliersCollection = collection(db, 'suppliers');
-  const pin  = getDoc(suppliersCollection);
-  console.log(pin);
-  
+  // const pin  = getDoc(suppliersCollection);
+  // console.log(pin);
+  const fetchSu = async () => {
+    const log = await getDoc(suppliersCollection);
+    console.log(log._docs[10].id);
+  };
+  fetchSu();
 
   const handleSubmit = async () => {
     if (!supplierName) {
@@ -36,6 +40,8 @@ const AddSuppliers = () => {
     try {
       // Generate a unique ID
       const supplierId = suppliersCollection.doc().id;
+      console.log(supplierId);
+      console.log(getDoc(suppliersCollection));
 
       // Add the supplier to the suppliers collection
       await addDoc(suppliersCollection, {
@@ -52,7 +58,7 @@ const AddSuppliers = () => {
       Alert.alert('Error', 'There was a problem adding the supplier.');
     }
     setCommission(null);
-    setSupplierName('')
+    setSupplierName('');
   };
 
   return (
@@ -79,8 +85,10 @@ const AddSuppliers = () => {
         placeholder="Enter commission"
         placeholderTextColor="gray"
       />
-      <TouchableOpacity style={tw`border-2 border-black rounded-lg`} onPress={handleSubmit} >
-        <Text style={tw`text-black text-center text-xl`} >Submit</Text>
+      <TouchableOpacity
+        style={tw`border-2 border-black rounded-lg`}
+        onPress={handleSubmit}>
+        <Text style={tw`text-black text-center text-xl`}>Submit</Text>
       </TouchableOpacity>
     </View>
   );

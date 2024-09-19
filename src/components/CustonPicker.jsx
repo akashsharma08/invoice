@@ -4,6 +4,8 @@ import { Picker } from "@react-native-picker/picker";
 import { Image, StyleSheet, View } from "react-native";
 
 const CustomPicker = ({ selectedValue, onValueChange, items }) => {
+  console.log(selectedValue);
+  
   return (
     <View style={styles.pickerContainer}>
       <Picker

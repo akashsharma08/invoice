@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import tw from 'twrnc';
-import { useAuth } from '../auth/AuthContext';
+import React, { useEffect, useState } from "react";
+import tw from "twrnc";
+import { useAuth } from "../auth/AuthContext";
+
 // import { setPin as updateReduxPin } from "../redux/slices/PinSlice";
 
 import {
@@ -180,6 +181,11 @@ const HomeScreen = () => {
           style={tw`border-2 px-5 rounded-lg h-24 w-36 flex justify-center items-center`}
           onPress={() => navigation.navigate('AddSuppliers')}>
           <Text style={tw`text-black text-lg text-center`}>Add Suppliers</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={tw`border-2 px-5 rounded-lg h-24 w-36 flex justify-center items-center`}
+          onPress={() => navigation.navigate('SalesReport')}>
+          <Text style={tw`text-black text-lg text-center`}>Sales Report</Text>
         </TouchableOpacity>
       </View>
 

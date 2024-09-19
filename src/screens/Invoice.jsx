@@ -117,7 +117,7 @@ const Invoice = () => {
       id: scannedItem.id,
       name: scannedItem.name,
       price: scannedItem.price,
-      commission: scannedItem.commission,
+      // commission: scannedItem.commission,
       quantity: 1, // Set default quantity to 1
       maxQuantity: scannedItem.quantity, // Use maxQuantity from the database
     };
@@ -130,7 +130,7 @@ const Invoice = () => {
   const updateTotalAmount = updatedList => {
     const total = updatedList.reduce(
       (sum, product) =>
-        sum + (product.price + product.commission) * product.quantity,
+        sum + (product.price ) * product.quantity,
       0,
     );
     setTotalAmount(total);
@@ -171,9 +171,9 @@ const Invoice = () => {
         product =>
           `<tr>
             <td>${product.name}</td>
-            <td>${product.price + product.commission}</td>
+            <td>${product.price }</td>
             <td>${product.quantity}</td>
-            <td>${(product.price + product.commission) * product.quantity}</td>
+            <td>${(product.price ) * product.quantity}</td>
           </tr>`,
       )
       .join('');
@@ -242,6 +242,10 @@ const Invoice = () => {
       );
 
       // Step 3: Create a sales report in a new Firestore collection
+      console.log("1");
+      
+      console.log(productList);
+      
       const salesCollection = collection(db, 'salesReports'); // Create 'salesReports' collection
       const salesReport = {
         customerName,
@@ -249,9 +253,10 @@ const Invoice = () => {
         products: productList.map(product => ({
           name: product.name,
           price: product.price,
-          commission: product.commission,
+          productId: product.id,
+
           quantity: product.quantity,
-          total: (product.price + product.commission) * product.quantity,
+          total: (product.price ) * product.quantity,
         })),
         totalAmount,
         date: new Date().toISOString(), // Add date for the sales report
@@ -392,7 +397,7 @@ const Invoice = () => {
                 </Text>
                 <View style={tw`flex-row flex-1 justify-between`}>
                   <Text style={[styles.productName, tw`text-black`]}>
-                    ₹{item.price + item.commission}
+                    ₹{item.price}
                   </Text>
                   <View style={tw`flex-row items-center justify-center`}>
                     <TouchableOpacity
@@ -410,7 +415,7 @@ const Invoice = () => {
                     </TouchableOpacity>
                   </View>
                   <Text style={[styles.productName, tw`text-blue-400`]}>
-                    ₹{(item.price + item.commission) * item.quantity}
+                    ₹{(item.price ) * item.quantity}
                   </Text>
                 </View>
               </View>
