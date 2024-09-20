@@ -46,7 +46,7 @@ const AddSuppliers = () => {
       // Add the supplier to the suppliers collection
       await addDoc(suppliersCollection, {
         name: supplierName,
-        commision: commission,
+        commission: commission,
         supplierId: supplierId, // Automatically generated ID
         createdAt: serverTimestamp(),
       });

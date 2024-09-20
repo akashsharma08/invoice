@@ -59,13 +59,14 @@ const App = () => {
               name="HomeScreen"
               options={{
                 headerTintColor: 'white',
-                headerLeft: () => (
-                  <Image
-                    resizeMode="center"
-                    style={tw`w-6 ml-2`}
-                    source={require('./src/images/menu.png')}
-                  />
-                ),
+                // headerLeft: () => (
+                //   <Image
+                //     resizeMode="center"
+                //     style={tw`w-6 ml-2`}
+                //     source={require('./src/images/menu.png')}
+                //   />
+                // ),
+                headerLeft: () => null,
                 headerRight: () => <Notification />,
                 title: 'NIHAAR',
                 headerStyle: {

@@ -421,7 +421,7 @@ const ProductsData = () => {
                   <Text style={tw`text-xl font-bold text-black`}>
                     {item.name}
                   </Text>
-                  <Text style={tw`text-sm text-gray-500`}>
+                  <Text style={tw`text-sm w-40 text-gray-500`}>
                     {item.description}
                   </Text>
                   <Text style={tw`text-lg text-green-600`}>
